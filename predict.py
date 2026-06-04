@@ -21,6 +21,13 @@ with open("label_mapping.pkl", "rb") as f:
 
 # prediciton function
 def predict_intent(text):
+    """  
+    Predicts the intent of a given text input.
+    Args:
+        text (str): The input text for which to predict the intent.
+    Returns:
+        tuple: A tuple containing the predicted intent, confidence score, and top 3 predictions with their probabilities.
+    """
     inputs = tokenizer(
         text,
         return_tensors = "pt",
@@ -41,9 +48,19 @@ def predict_intent(text):
     pred_idx = probs.argmax().item()
     confidence = probs.max().item()
 
+    # retrieving the top 3 predictions
+    top_probs, top_indices = torch.topk(probs, k = 3)
+
+    top_predictions = []
+
+    # mapping the top indices to their corresponding labels and probabilities
+    for p, idx in zip(top_probs[0], top_indices[0]):
+        top_predictions.append((label_names[idx.item()], p.item()))
+
     return (
         label_names[pred_idx],
-        confidence
+        confidence,
+        top_predictions
     )
 
 
